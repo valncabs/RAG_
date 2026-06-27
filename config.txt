@@ -1,0 +1,86 @@
+Paso 1. Instalar virtualenv
+
+En tu PowerShell ejecuta:
+
+Comando
+
+pip install virtualenv
+
+Cuando termine debería decir algo como Successfully installed virtualenv.
+
+Paso 2. Crear el entorno virtual
+
+Aún dentro de C:\Users\velentina\Desktop\RAG, ejecuta:
+
+Comando
+
+python -m venv myvenv
+
+Esto creará la carpeta myvenv.
+
+Paso 3. Activar el entorno virtual
+
+Primero ejecuta este comando (solo una vez):
+
+Comando
+
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+
+Si pregunta algo, escribe S y Enter.
+
+Luego activa el entorno:
+
+Comando
+
+.\myvenv\Scripts\Activate
+
+Con el entorno (myvenv) activado, ejecuta uno por uno estos comandos.
+
+Paso 1
+pip install langchain langchain-community langchain-huggingface
+
+Paso 2
+pip install chromadb
+
+Paso 3
+pip install huggingface_hub
+
+Paso 4
+pip install langchain-huggingface
+
+(Aunque ya viene con el primer comando, el documento también lo instala por separado.)
+
+Paso 5
+pip install pypdf
+
+Paso 6
+pip install python-dotenv
+
+Paso 7
+pip install sentence-transformers
+
+⚠️ Aquí puede aparecer el primer problema con Python 3.13.
+Si este comando da error, no intentes solucionarlo todavía. Copia el error completo y me lo envías; te indicaré la forma más rápida de resolverlo.
+
+Paso 8
+pip install fastapi "uvicorn[standard]"
+
+Paso 9
+pip install pydantic
+
+Paso 10
+pip install langchain-text-splitters
+
+Paso 11
+pip install langchain-core
+
+Paso 12
+pip install langchain-chroma
+
+Paso 13
+pip install langchain-groq
+
+
+
+ python -m app.ingest
+ uvicorn app.main:app --reload
