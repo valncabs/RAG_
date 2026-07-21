@@ -1,4 +1,15 @@
-.env
-chroma_db/
+# Virtual environments
+.venv/
+venv/
+
+# Python
 __pycache__/
-app/__pycache__/
+*.pyc
+.pytest_cache/
+
+# Variables de entorno
+.env
+
+# IDE
+.vscode/
+.idea/
