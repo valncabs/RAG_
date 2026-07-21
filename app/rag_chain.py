@@ -1,7 +1,6 @@
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_groq import ChatGroq
 
@@ -34,11 +33,16 @@ RAG_PROMPT = PromptTemplate(
 
 
 def get_embeddings():
+    """
+    Embeddings generados vía HuggingFace Inference API (Opción A).
+    Usa el mismo modelo (settings.EMBEDDING_MODEL) que se usó para
+    construir el chroma_db actual, por lo que NO requiere reindexar.
+    """
 
-    return HuggingFaceEmbeddings(
-        model_name=settings.EMBEDDING_MODEL,
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True},
+    return HuggingFaceEndpointEmbeddings(
+        model=settings.EMBEDDING_MODEL,
+        task="feature-extraction",
+        huggingfacehub_api_token=settings.HUGGINGFACEHUB_API_TOKEN,
     )
 
 
@@ -70,13 +74,13 @@ def format_docs(docs):
 
 
 _retriever = None
-_chain = None
+_llm_chain = None  # PROMPT | llm | parser, SIN el retriever adentro
 
 
 def initialize_chain():
 
     global _retriever
-    global _chain
+    global _llm_chain
 
     settings.validate()
 
@@ -95,12 +99,9 @@ def initialize_chain():
         },
     )
 
-    _chain = (
-        {
-            "context": _retriever | format_docs,
-            "question": RunnablePassthrough(),
-        }
-        | RAG_PROMPT
+    # Ya no incluye al retriever: recibe context + question ya listos.
+    _llm_chain = (
+        RAG_PROMPT
         | llm
         | StrOutputParser()
     )
@@ -108,16 +109,22 @@ def initialize_chain():
 
 def get_answer(question: str):
 
-    if _chain is None:
+    if _llm_chain is None:
         raise RuntimeError(
             "Pipeline no inicializado."
         )
 
-    source_documents = _retriever.invoke(
-        question
-    )
+    # Única invocación del retriever para toda la consulta.
+    source_documents = _retriever.invoke(question)
 
-    answer = _chain.invoke(question)
+    context = format_docs(source_documents)
+
+    answer = _llm_chain.invoke(
+        {
+            "context": context,
+            "question": question,
+        }
+    )
 
     sources = []
 
